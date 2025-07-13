@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import throttle from 'lodash.throttle';
-import { processText, getNodeText, getNodeType, replaceNodeText } from '../utils/mockTextProcessor';
-import type { ProcessTextRequest } from '../utils/mockTextProcessor';
+import { processText, getNodeText, getNodeType, replaceNodeText } from '../utils/textProcessor';
+import type { ProcessTextRequest } from '../utils/textProcessor';
 
 export interface IconStyle {
   display: string;
@@ -56,7 +56,7 @@ export const useHoverIcon = (editorView?: any) => {
   const [lockedHighlight, setLockedHighlight] = useState<LockedHighlight | null>(null);
 
   // 用于延迟隐藏图标的定时器
-  const [hideTimer, setHideTimer] = useState<NodeJS.Timeout | null>(null);
+  const [hideTimer, setHideTimer] = useState<number | null>(null);
 
   // 气泡卡片状态
   const [bubbleCardState, setBubbleCardState] = useState<BubbleCardState>({
@@ -74,9 +74,7 @@ export const useHoverIcon = (editorView?: any) => {
       const domAtPos = view.domAtPos(nodeStartPos);
       const textNode = domAtPos.node;
 
-      console.log('Node type:', currentNode.type.name);
-      console.log('DOM node:', textNode);
-      console.log('Parent element:', textNode?.parentElement);
+
 
       if (textNode) {
         // 根据节点类型选择合适的元素来计算宽度
@@ -122,24 +120,21 @@ export const useHoverIcon = (editorView?: any) => {
           const maxAllowedWidth = proseMirrorRect.width;
           baseWidth = Math.min(textElementRect.width, maxAllowedWidth);
 
-          console.log('Target element:', targetElement);
-          console.log('Element width:', textElementRect.width);
-          console.log('Max allowed width:', maxAllowedWidth);
-          console.log('Final width:', baseWidth);
+
         } else {
           // 如果找不到合适的元素，回退到坐标计算
           baseWidth = nodeEndCoords.right - nodeStartCoords.left;
-          console.log('No target element found, using coordinate calculation:', baseWidth);
+
         }
       } else {
         // 回退到坐标计算
         baseWidth = nodeEndCoords.right - nodeStartCoords.left;
-        console.log('Using coordinate calculation:', baseWidth);
+
       }
     } catch (error) {
       // 如果出错，回退到坐标计算
       baseWidth = nodeEndCoords.right - nodeStartCoords.left;
-      console.log('Error, using coordinate calculation:', baseWidth, error);
+
     }
 
     return baseWidth;
@@ -294,7 +289,7 @@ export const useHoverIcon = (editorView?: any) => {
 
   // 图标点击处理函数
   const handleIconClick = useCallback(() => {
-    console.log('段落图标被点击');
+
 
     if (currentNodeInfo) {
       // 检查当前节点是否已经被锁定
@@ -462,7 +457,7 @@ export const useHoverIcon = (editorView?: any) => {
         const success = replaceNodeText(editorView, currentNodeInfo, response.newText);
 
         if (success) {
-          console.log('文本替换成功:', response.message);
+
           // 关闭气泡卡片、解锁高亮并隐藏遮罩层
           setBubbleCardState(prev => ({ ...prev, isVisible: false, isLoading: false }));
           setLockedHighlight(null);
@@ -476,15 +471,15 @@ export const useHoverIcon = (editorView?: any) => {
           });
           setCurrentNodeInfo(null);
         } else {
-          console.error('文本替换失败');
+
           setBubbleCardState(prev => ({ ...prev, isLoading: false }));
         }
       } else {
-        console.error('文本处理失败:', response.message);
+
         setBubbleCardState(prev => ({ ...prev, isLoading: false }));
       }
     } catch (error) {
-      console.error('处理过程中发生错误:', error);
+
       setBubbleCardState(prev => ({ ...prev, isLoading: false }));
     }
   }, [currentNodeInfo, editorView]);

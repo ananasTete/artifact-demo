@@ -85,7 +85,7 @@ export const MarkdownPaste = Extension.create({
 
               return true; // 阻止默认的粘贴行为
             } catch (error) {
-              console.error('Error parsing markdown:', error);
+
               return false; // 如果解析失败，使用默认粘贴行为
             }
           },

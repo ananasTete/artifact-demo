@@ -10,12 +10,12 @@ interface BubbleCardProps {
   onSubmit: (inputText: string) => void;
   onClose: () => void;
   isLoading?: boolean;
-  iconRef?: React.RefObject<HTMLDivElement>; // 添加 icon 引用，用于点击检测
+  iconRef?: React.RefObject<HTMLDivElement | null>; // 添加 icon 引用，用于点击检测
 }
 
 export const BubbleCard: React.FC<BubbleCardProps> = ({
   isVisible,
-  position,
+  position: _position,
   onSubmit,
   onClose,
   isLoading = false,
