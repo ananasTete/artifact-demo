@@ -1,11 +1,12 @@
-import { useEditor, EditorContent, BubbleMenu } from '@tiptap/react';
+import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { marked } from 'marked';
 import { SlashCommands } from './extensions/SlashCommands';
 import { MarkdownPaste } from './extensions/MarkdownPaste';
 import { LinkHoverMenu } from './components/LinkHoverMenu';
-import { SuggestionBubbleMenu } from './components/SuggestionBubbleMenu';
+import { TextFormatBubbleMenu } from './components/TextFormatBubbleMenu';
+import './components/TextFormatBubbleMenu.css';
 
 interface TiptapProps {
   markdown: string;
@@ -34,17 +35,7 @@ const Tiptap = ({ markdown }: TiptapProps) => {
   return (
     <div>
       <LinkHoverMenu editor={editor} />
-      {/* 建议气泡菜单 - 仅当有文本被选中时才显示 */}
-      <BubbleMenu
-        editor={editor}
-        tippyOptions={{ duration: 100 }}
-        shouldShow={({ state }) => {
-          const { from, to } = state.selection;
-          return from !== to;
-        }}
-      >
-        <SuggestionBubbleMenu editor={editor} />
-      </BubbleMenu>
+      <TextFormatBubbleMenu editor={editor} />
       <EditorContent editor={editor} />
     </div>
   );

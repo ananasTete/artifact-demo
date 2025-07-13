@@ -1,0 +1,277 @@
+/* Text Format Bubble Menu Styles */
+.text-format-bubble-menu {
+  background: white;
+  border: 1px solid #e1e5e9;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  z-index: 1000;
+  /* 确保菜单可以接收鼠标事件 */
+  pointer-events: auto;
+}
+
+.bubble-menu-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.button-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.format-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  position: relative;
+  /* 确保按钮可以接收鼠标事件 */
+  pointer-events: auto;
+  /* 防止按钮在点击时失去焦点 */
+  outline: none;
+}
+
+.format-button:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.format-button:active {
+  background: #e5e7eb;
+  transform: scale(0.95);
+}
+
+.format-button.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.format-button.active:hover {
+  background: #2563eb;
+}
+
+/* 特定按钮样式 */
+.format-button.bold {
+  font-weight: 700;
+}
+
+.format-button.italic {
+  font-style: italic;
+  font-family: serif;
+}
+
+.format-button.strike {
+  text-decoration: line-through;
+}
+
+.format-button.code {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+}
+
+.format-button.heading {
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.format-button.blockquote {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.format-button.code-block {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 11px;
+}
+
+.format-button.bullet-list {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.format-button.ordered-list {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.divider {
+  width: 1px;
+  height: 20px;
+  background: #e5e7eb;
+  margin: 0 4px;
+}
+
+/* Tippy.js 主题样式 */
+.tippy-box[data-theme~='light-border'] {
+  background-color: white;
+  border: 1px solid #e1e5e9;
+  color: #374151;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='top'] > .tippy-arrow::before {
+  border-top-color: #e1e5e9;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='top'] > .tippy-arrow::after {
+  border-top-color: white;
+  border-width: 7px 7px 0;
+  top: 17px;
+  left: 1px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='bottom'] > .tippy-arrow::before {
+  border-bottom-color: #e1e5e9;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='bottom'] > .tippy-arrow::after {
+  border-bottom-color: white;
+  border-width: 0 7px 7px;
+  bottom: 17px;
+  left: 1px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='left'] > .tippy-arrow::before {
+  border-left-color: #e1e5e9;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='left'] > .tippy-arrow::after {
+  border-left-color: white;
+  border-width: 7px 0 7px 7px;
+  left: 17px;
+  top: 1px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='right'] > .tippy-arrow::before {
+  border-right-color: #e1e5e9;
+}
+
+.tippy-box[data-theme~='light-border'] > .tippy-arrow::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='top'] > .tippy-arrow::after {
+  border-top-color: white;
+  border-width: 7px 7px 0;
+  top: 17px;
+  left: 1px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='bottom'] > .tippy-arrow::after {
+  border-bottom-color: white;
+  border-width: 0 7px 7px;
+  bottom: 17px;
+  left: 1px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='left'] > .tippy-arrow::after {
+  border-left-color: white;
+  border-width: 7px 0 7px 7px;
+  left: 17px;
+  top: 1px;
+}
+
+.tippy-box[data-theme~='light-border'][data-placement^='right'] > .tippy-arrow::after {
+  border-right-color: white;
+  border-width: 7px 7px 7px 0;
+  right: 17px;
+  top: 1px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .text-format-bubble-menu {
+    padding: 6px;
+  }
+  
+  .format-button {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+  
+  .button-group {
+    gap: 1px;
+  }
+  
+  .bubble-menu-container {
+    gap: 2px;
+  }
+  
+  .divider {
+    margin: 0 2px;
+  }
+}
+
+/* 动画效果 */
+@keyframes bubbleMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.text-format-bubble-menu {
+  animation: bubbleMenuFadeIn 0.15s ease-out;
+}
+
+/* 确保菜单在其他元素之上 */
+.text-format-bubble-menu {
+  position: relative;
+  z-index: 1000;
+}
+
+/* 防止按钮文本被选中 */
+.format-button {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* 焦点样式 */
+.format-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.format-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+  .text-format-bubble-menu {
+    border: 2px solid #000;
+  }
+  
+  .format-button {
+    border: 1px solid transparent;
+  }
+  
+  .format-button:hover,
+  .format-button.active {
+    border-color: #000;
+  }
+}
