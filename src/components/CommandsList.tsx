@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
 import type { CommandItem } from '../extensions/SlashCommands';
 import './CommandsList.css';
 
@@ -7,8 +7,13 @@ interface CommandsListProps {
   command: (item: CommandItem) => void;
 }
 
-export const CommandsList = forwardRef<any, CommandsListProps>((props, ref) => {
+interface CommandsListRef {
+  onKeyDown: (props: { event: KeyboardEvent }) => boolean;
+}
+
+export const CommandsList = forwardRef<CommandsListRef, CommandsListProps>((props, ref) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const commandListRef = useRef<HTMLDivElement>(null);
 
   const selectItem = (index: number) => {
     const item = props.items[index];
@@ -28,6 +33,26 @@ export const CommandsList = forwardRef<any, CommandsListProps>((props, ref) => {
   const enterHandler = () => {
     selectItem(selectedIndex);
   };
+
+  useEffect(() => {
+    const container = commandListRef.current;
+    const item = container?.children[selectedIndex] as HTMLElement;
+
+    if (item && container) {
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
+
+      const isVisible =
+        itemRect.top >= containerRect.top &&
+        itemRect.bottom <= containerRect.bottom;
+
+      if (!isVisible) {
+        item.scrollIntoView({
+          block: 'nearest',
+        });
+      }
+    }
+  }, [selectedIndex]);
 
   useEffect(() => setSelectedIndex(0), [props.items]);
 
@@ -53,7 +78,7 @@ export const CommandsList = forwardRef<any, CommandsListProps>((props, ref) => {
   }));
 
   return (
-    <div className="commands-list">
+    <div className="commands-list" ref={commandListRef}>
       {props.items.length ? (
         props.items.map((item, index) => (
           <button
