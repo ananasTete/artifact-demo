@@ -3,30 +3,80 @@ import './App.css';
 
 function App() {
   const initialMarkdown = `
+# 一级标题 - 悬浮测试
 
-Visit [GitHub](https://github.com) to see more projects.
+这是一个普通段落，将鼠标悬浮在这里应该会显示图标。
 
-Try editing this text! Type "/" to see available commands.
+## 二级标题 - 悬浮测试
 
-### 测试段落 2
-Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+### 三级标题 - 悬浮测试
 
-### 测试段落 3
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+#### 四级标题 - 悬浮测试
 
-### 测试段落 4
-Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+这是另一个普通段落，用于测试悬浮图标功能。
 
-### 测试段落 5
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.
+> 这是一个引用块，悬浮在这里也应该显示图标。
+> 引用块的第二行。
 
-### 底部链接测试
-这是页面底部的测试链接：[底部链接](https://bottom.example.com) 和 [另一个底部链接](https://bottom2.example.com)
+**列表测试：**
 
-**测试说明：**
-- 悬停在底部链接上，菜单应该显示在链接上方
-- 菜单不应该超出屏幕顶部
-- 如果空间不足，菜单会自动调整到最佳位置`;
+- 这是无序列表项 1 - 悬浮测试
+- 这是无序列表项 2 - 悬浮测试
+- 这是无序列表项 3 - 悬浮测试
+
+**有序列表：**
+
+1. 这是有序列表项 1 - 悬浮测试
+2. 这是有序列表项 2 - 悬浮测试
+3. 这是有序列表项 3 - 悬浮测试
+
+**代码块测试：**
+
+\`\`\`javascript
+// 这是代码块，悬浮在这里也应该显示图标
+function hello() {
+  console.log("Hello World!");
+}
+\`\`\`
+
+**功能说明：**
+
+现在悬浮图标支持以下元素类型：
+- 段落 (paragraph)
+- 标题 (heading) - h1 到 h6
+- 引用块 (blockquote)
+- 列表项 (listItem)
+- 代码块 (codeBlock)
+
+**新功能 - 背景高亮与锁定：**
+1. 将鼠标悬浮在任意文本块上，右侧会显示加号图标
+2. 将鼠标悬浮在加号图标上，对应的文本块会显示蓝色背景高亮（包含内边距效果）
+3. **点击加号图标**，高亮效果会被锁定，不再消失
+4. 悬浮时和锁定时的高亮样式完全一致（相同的颜色、边框、外发光和内边距）
+5. 再次点击同一个图标可以解锁高亮效果
+6. 高亮效果不会遮挡文字，而是作为背景色显示
+7. **优化体验**：图标和高亮有延迟隐藏机制，移动鼠标时不会立即消失
+
+**🆕 新功能 - 气泡卡片文本处理：**
+1. **点击加号图标**后，会显示一个气泡卡片，包含输入框和提交按钮
+2. 气泡卡片与图标右对齐显示，有小箭头指向图标
+3. 在输入框中输入处理指令，例如：
+   - "翻译" 或 "translate" - 模拟翻译功能
+   - "总结" 或 "summarize" - 模拟总结功能
+   - "扩展" 或 "expand" - 模拟内容扩展
+   - "修正" 或 "correct" - 模拟文本修正
+   - "格式化" 或 "format" - 模拟格式化处理
+   - "删除" 或 "delete" - 删除文本内容
+4. **点击提交按钮**或按 **Enter 键**提交处理请求
+5. 处理过程中会显示加载动画，完成后原文本会被替换为处理结果
+6. 按 **Escape 键**或点击卡片外部可关闭气泡卡片
+7. 支持模拟网络延迟和错误处理（10%概率模拟失败）
+
+**其他功能：**
+
+**链接测试：** 悬停在 [GitHub](https://github.com) 链接上会显示链接编辑菜单。
+
+**斜杠命令：** 输入 "/" 可以看到可用的命令列表。`;
 
   return (
     <div className="App">
