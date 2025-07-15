@@ -1,4 +1,6 @@
 .App {
+  height: 100vh;
+  overflow: auto;
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
@@ -124,6 +126,20 @@
   color: #1a73e8;
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* 文本选择高亮样式 */
+.ProseMirror .text-selection-highlight {
+  background-color: #b3d4fc;
+  /* 使用浏览器默认选择背景色 */
+  background-color: rgba(0, 123, 255, 0.3);
+}
+
+/* 深色模式下的选择高亮 */
+@media (prefers-color-scheme: dark) {
+  .ProseMirror .text-selection-highlight {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 .ProseMirror .tiptap-link:hover {
@@ -361,6 +377,40 @@
 /* 阻止页面滚动的样式 */
 body.no-scroll {
   overflow: hidden;
+}
+
+/* 固定标题样式 */
+.ProseMirror h1[data-fixed-title] {
+  font-size: 2.5em;
+  font-weight: 700;
+  margin: 0 0 1em 0;
+  line-height: 1.2;
+  color: #202124;
+  border: none;
+  outline: none;
+  position: relative;
+}
+
+/* 固定标题的 placeholder 样式 */
+.ProseMirror .fixed-title-placeholder::before {
+  content: attr(data-placeholder);
+  color: #9aa0a6;
+  font-weight: 400;
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* 深色模式下的固定标题样式 */
+@media (prefers-color-scheme: dark) {
+  .ProseMirror h1[data-fixed-title] {
+    color: #e8eaed;
+  }
+
+  .ProseMirror .fixed-title-placeholder::before {
+    color: #5f6368;
+  }
 }
 
 

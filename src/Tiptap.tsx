@@ -5,11 +5,14 @@ import Link from '@tiptap/extension-link';
 import { marked } from 'marked';
 import { SlashCommandNode } from './extensions/SlashCommandNode';
 import { MarkdownPaste } from './extensions/MarkdownPaste';
+import { SelectionHighlight } from './extensions/SelectionHighlight';
+import { FixedTitleNode } from './extensions/FixedTitleNode';
 import { LinkHoverMenu } from './components/LinkHoverMenu';
-import { TextFormatBubbleMenu } from './components/TextFormatBubbleMenu';
+import { CustomTextSelectionMenu } from './components/CustomTextSelectionMenu';
 import { HoverIcon } from './components/HoverIcon';
 import { useHoverIcon } from './hooks/useHoverIcon';
-import './components/TextFormatBubbleMenu.css';
+
+import './components/CustomTextSelectionMenu.css';
 
 interface TiptapProps {
   markdown: string;
@@ -18,16 +21,20 @@ interface TiptapProps {
 const Tiptap = ({ markdown }: TiptapProps) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit, // 保留完整的StarterKit功能，包括标题
       Link.configure({
         HTMLAttributes: {
           class: 'tiptap-link',
         },
       }),
+      SelectionHighlight,
       SlashCommandNode,
       MarkdownPaste,
+      FixedTitleNode.configure({
+        placeholder: '标题',
+      }),
     ],
-    content: marked(markdown),
+    content: `<h1 data-fixed-title="true"></h1>${marked(markdown)}`,
     editable: true,
   });
 
@@ -55,6 +62,11 @@ const Tiptap = ({ markdown }: TiptapProps) => {
       const editorElement = editor.view.dom;
       editorElement.addEventListener('mousemove', handleDOMMouseMove);
 
+      // 将编辑器实例添加到全局对象，方便调试（仅在开发环境）
+      if (typeof window !== 'undefined' && import.meta.env.DEV) {
+        (window as any).editor = editor;
+      }
+
       return () => {
         editorElement.removeEventListener('mousemove', handleDOMMouseMove);
       };
@@ -68,7 +80,7 @@ const Tiptap = ({ markdown }: TiptapProps) => {
   return (
     <div className="editor-wrapper" onMouseLeave={handleMouseLeave}>
       <LinkHoverMenu editor={editor} />
-      <TextFormatBubbleMenu editor={editor} />
+      <CustomTextSelectionMenu editor={editor} />
 
       <HoverIcon
         iconStyle={iconStyle}

@@ -2,10 +2,7 @@ import Tiptap from './Tiptap';
 import './App.css';
 
 function App() {
-  const initialMarkdown = `
-# 欢迎使用编辑器
-
-这是一个功能丰富的文本编辑器，支持 Markdown 语法和多种交互功能。
+  const initialMarkdown = `这是一个功能丰富的文本编辑器，支持 Markdown 语法和多种交互功能。
 
 ## 主要功能
 
