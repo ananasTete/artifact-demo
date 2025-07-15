@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { marked } from 'marked';
-import { SlashCommands } from './extensions/SlashCommands';
+import { SlashCommandNode } from './extensions/SlashCommandNode';
 import { MarkdownPaste } from './extensions/MarkdownPaste';
 import { LinkHoverMenu } from './components/LinkHoverMenu';
 import { TextFormatBubbleMenu } from './components/TextFormatBubbleMenu';
@@ -24,7 +24,7 @@ const Tiptap = ({ markdown }: TiptapProps) => {
           class: 'tiptap-link',
         },
       }),
-      SlashCommands,
+      SlashCommandNode,
       MarkdownPaste,
     ],
     content: marked(markdown),

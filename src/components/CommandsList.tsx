@@ -1,10 +1,11 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
-import type { CommandItem } from '../extensions/SlashCommands';
+import type { CommandItem } from '../types/commands';
 import './CommandsList.css';
 
 interface CommandsListProps {
   items: CommandItem[];
   command: (item: CommandItem) => void;
+  selectedIndex?: number;
 }
 
 interface CommandsListRef {
@@ -12,7 +13,9 @@ interface CommandsListRef {
 }
 
 export const CommandsList = forwardRef<CommandsListRef, CommandsListProps>((props, ref) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [internalSelectedIndex, setInternalSelectedIndex] = useState(0);
+  const selectedIndex = props.selectedIndex !== undefined ? props.selectedIndex : internalSelectedIndex;
+  const setSelectedIndex = props.selectedIndex !== undefined ? () => {} : setInternalSelectedIndex;
   const commandListRef = useRef<HTMLDivElement>(null);
 
   const selectItem = (index: number) => {
@@ -54,7 +57,11 @@ export const CommandsList = forwardRef<CommandsListRef, CommandsListProps>((prop
     }
   }, [selectedIndex]);
 
-  useEffect(() => setSelectedIndex(0), [props.items]);
+  useEffect(() => {
+    if (props.selectedIndex === undefined) {
+      setInternalSelectedIndex(0);
+    }
+  }, [props.items, props.selectedIndex]);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
