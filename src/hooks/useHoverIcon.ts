@@ -1,5 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import throttle from 'lodash.throttle';
+import { EditorView } from '@tiptap/pm/view';
+import { Node } from '@tiptap/pm/model';
 import { processText, getNodeText, getNodeType, replaceNodeText } from '../utils/textProcessor';
 import type { ProcessTextRequest } from '../utils/textProcessor';
 
@@ -31,12 +33,12 @@ export interface BubbleCardState {
   isVisible: boolean;
   position: {
     top: string;
-    right: string;
+    left: string;
   };
   isLoading: boolean;
 }
 
-export const useHoverIcon = (editorView?: any) => {
+export const useHoverIcon = (editorView?: EditorView) => {
   const [iconStyle, setIconStyle] = useState<IconStyle>({
     display: 'none',
     top: '-100px',
@@ -61,12 +63,12 @@ export const useHoverIcon = (editorView?: any) => {
   // 气泡卡片状态
   const [bubbleCardState, setBubbleCardState] = useState<BubbleCardState>({
     isVisible: false,
-    position: { top: '0px', right: '0px' },
+    position: { top: '0px', left: '0px' },
     isLoading: false,
   });
 
   // 计算文本内容实际宽度的辅助函数
-  const calculateTextWidth = useCallback((view: any, currentNode: any, nodeStartPos: number, nodeEndCoords: any, nodeStartCoords: any) => {
+  const calculateTextWidth = useCallback((view: EditorView, currentNode: Node, nodeStartPos: number, nodeEndCoords: { left: number, right: number, top: number, bottom: number }, nodeStartCoords: { left: number, right: number, top: number, bottom: number }) => {
     let baseWidth;
 
     try {
@@ -81,7 +83,7 @@ export const useHoverIcon = (editorView?: any) => {
         let targetElement;
 
         // 如果 textNode 本身就是我们要的元素类型，直接使用
-        if (textNode.nodeType === Node.ELEMENT_NODE) {
+        if (textNode.nodeType === window.Node.ELEMENT_NODE) {
           const element = textNode as Element;
           if (currentNode.type.name === 'paragraph' && element.tagName === 'P') {
             targetElement = element;
@@ -131,7 +133,7 @@ export const useHoverIcon = (editorView?: any) => {
         baseWidth = nodeEndCoords.right - nodeStartCoords.left;
 
       }
-    } catch (error) {
+    } catch {
       // 如果出错，回退到坐标计算
       baseWidth = nodeEndCoords.right - nodeStartCoords.left;
 
@@ -142,17 +144,17 @@ export const useHoverIcon = (editorView?: any) => {
 
   // 悬浮图标的鼠标移动处理函数
   const throttledMouseMove = useMemo(
-    () => throttle((view: unknown, event: MouseEvent) => {
+    () => throttle((view: EditorView, event: MouseEvent) => {
       // 检查鼠标是否在图标区域内
-      const editorWrapper = (view as any).dom.closest('.editor-wrapper');
+      const editorWrapper = view.dom.closest('.editor-wrapper');
       if (editorWrapper) {
         const editorRect = editorWrapper.getBoundingClientRect();
         const mouseX = event.clientX;
         const mouseY = event.clientY;
 
-        // 图标区域大致在编辑器右侧，现在贴着编辑器边缘
-        const iconAreaLeft = editorRect.right - 10;
-        const iconAreaRight = editorRect.right + 30;
+        // 图标区域大致在编辑器左侧，现在贴着编辑器边缘
+        const iconAreaLeft = editorRect.left - 24;
+        const iconAreaRight = editorRect.left;
         const isInIconArea = mouseX >= iconAreaLeft && mouseX <= iconAreaRight &&
                             mouseY >= editorRect.top && mouseY <= editorRect.bottom;
 
@@ -177,11 +179,11 @@ export const useHoverIcon = (editorView?: any) => {
       const coords = { left: event.clientX, top: event.clientY };
 
       // 将屏幕坐标转换为 ProseMirror 的文档位置
-      const pos = (view as any).posAtCoords(coords);
+      const pos = view.posAtCoords(coords);
 
       if (pos) {
         // 从文档位置解析出更详细的信息，比如父节点的起始位置
-        const resolvedPos = (view as any).state.doc.resolve(pos.pos);
+        const resolvedPos = view.state.doc.resolve(pos.pos);
 
         // 检查当前节点是否是块级文本节点（段落、标题、列表项等）
         const currentNode = resolvedPos.parent;
@@ -196,12 +198,12 @@ export const useHoverIcon = (editorView?: any) => {
         const nodeEndPos = resolvedPos.end(resolvedPos.depth);
 
         // 获取节点起始和结束位置的屏幕坐标
-        const nodeStartCoords = (view as any).coordsAtPos(nodeStartPos);
-        const nodeEndCoords = (view as any).coordsAtPos(nodeEndPos);
+        const nodeStartCoords = view.coordsAtPos(nodeStartPos);
+        const nodeEndCoords = view.coordsAtPos(nodeEndPos);
 
         // 更新 icon 的位置和节点信息
         // nodeCoords.top 是相对于视口的，我们需要计算相对于 editor-wrapper 的位置
-        const editorWrapper = (view as any).dom.closest('.editor-wrapper');
+        const editorWrapper = view.dom.closest('.editor-wrapper');
         if (editorWrapper) {
           const editorRect = editorWrapper.getBoundingClientRect();
           const iconTop = nodeStartCoords.top - editorRect.top;
@@ -274,7 +276,7 @@ export const useHoverIcon = (editorView?: any) => {
     [setIconStyle, hideTimer, setHideTimer, calculateTextWidth, lockedHighlight, setBubbleCardState]
   );
 
-  const handleMouseMove = useCallback((view: unknown, event: MouseEvent) => {
+  const handleMouseMove = useCallback((view: EditorView, event: MouseEvent) => {
     throttledMouseMove(view, event);
   }, [throttledMouseMove]);
 
@@ -317,7 +319,7 @@ export const useHoverIcon = (editorView?: any) => {
         // 显示气泡卡片（位置将相对于 icon 计算）
         setBubbleCardState({
           isVisible: true,
-          position: { top: '0px', right: '0px' }, // 这些值现在不重要，因为会相对于 icon 定位
+          position: { top: '0px', left: '0px' }, // 这些值现在不重要，因为会相对于 icon 定位
           isLoading: false,
         });
       }
@@ -478,7 +480,7 @@ export const useHoverIcon = (editorView?: any) => {
 
         setBubbleCardState(prev => ({ ...prev, isLoading: false }));
       }
-    } catch (error) {
+    } catch {
 
       setBubbleCardState(prev => ({ ...prev, isLoading: false }));
     }

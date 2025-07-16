@@ -1,12 +1,12 @@
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import { useEffect } from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import { marked } from 'marked';
+import { CustomHeading } from './extensions/CustomHeading';
 import { SlashCommandNode } from './extensions/SlashCommandNode';
 import { MarkdownPaste } from './extensions/MarkdownPaste';
 import { SelectionHighlight } from './extensions/SelectionHighlight';
-import { FixedTitleNode } from './extensions/FixedTitleNode';
 import { LinkHoverMenu } from './components/LinkHoverMenu';
 import { CustomTextSelectionMenu } from './components/CustomTextSelectionMenu';
 import { HoverIcon } from './components/HoverIcon';
@@ -16,12 +16,16 @@ import './components/CustomTextSelectionMenu.css';
 
 interface TiptapProps {
   markdown: string;
+  onEditorReady?: (editor: Editor) => void;
 }
 
-const Tiptap = ({ markdown }: TiptapProps) => {
+const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
   const editor = useEditor({
     extensions: [
-      StarterKit, // 保留完整的StarterKit功能，包括标题
+      StarterKit,
+      CustomHeading.configure({
+        levels: [1, 2, 3, 4, 5, 6],
+      }),
       Link.configure({
         HTMLAttributes: {
           class: 'tiptap-link',
@@ -30,11 +34,8 @@ const Tiptap = ({ markdown }: TiptapProps) => {
       SelectionHighlight,
       SlashCommandNode,
       MarkdownPaste,
-      FixedTitleNode.configure({
-        placeholder: '标题',
-      }),
     ],
-    content: `<h1 data-fixed-title="true"></h1>${marked(markdown)}`,
+    content: marked(markdown),
     editable: true,
   });
 
@@ -52,6 +53,13 @@ const Tiptap = ({ markdown }: TiptapProps) => {
     handleBubbleCardClose,
   } = useHoverIcon(editor?.view);
 
+  // 编辑器准备就绪回调
+  useEffect(() => {
+    if (editor && onEditorReady) {
+      onEditorReady(editor);
+    }
+  }, [editor, onEditorReady]);
+
   // 添加鼠标移动事件处理
   useEffect(() => {
     if (editor?.view) {
@@ -64,7 +72,7 @@ const Tiptap = ({ markdown }: TiptapProps) => {
 
       // 将编辑器实例添加到全局对象，方便调试（仅在开发环境）
       if (typeof window !== 'undefined' && import.meta.env.DEV) {
-        (window as any).editor = editor;
+        (window as { editor?: Editor }).editor = editor;
       }
 
       return () => {

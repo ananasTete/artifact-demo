@@ -21,7 +21,7 @@
 /* 段落悬浮图标容器样式 */
 .paragraph-hover-icon-container {
   position: absolute;
-  right: -6px; /* 贴着编辑器边缘，只留一点间距 */
+  left: -48px; /* 贴着编辑器边缘，只留一点间距 */
   width: 24px;
   height: 24px;
   z-index: 100;
@@ -50,7 +50,7 @@
 /* 响应式设计 */
 @media (max-width: 768px) {
   .paragraph-hover-icon-container {
-    right: -4px; /* 移动端也贴着编辑器边缘 */
+    left: -20px; /* 移动端也贴着编辑器边缘 */
     width: 20px;
     height: 20px;
   }
