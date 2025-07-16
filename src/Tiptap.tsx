@@ -7,6 +7,8 @@ import { CustomHeading } from './extensions/CustomHeading';
 import { SlashCommandNode } from './extensions/SlashCommandNode';
 import { MarkdownPaste } from './extensions/MarkdownPaste';
 import { SelectionHighlight } from './extensions/SelectionHighlight';
+import { ProtectedFirstHeading } from './extensions/ProtectedFirstHeading';
+import { CustomPlaceholder } from './extensions/CustomPlaceholder';
 import { LinkHoverMenu } from './components/LinkHoverMenu';
 import { CustomTextSelectionMenu } from './components/CustomTextSelectionMenu';
 import { HoverIcon } from './components/HoverIcon';
@@ -19,10 +21,15 @@ interface TiptapProps {
   onEditorReady?: (editor: Editor) => void;
 }
 
+// TODO 之后确认标题需不需要添加到目录里
+
 const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        // 禁用 StarterKit 中的 Heading，使用我们的 CustomHeading
+        heading: false,
+      }),
       CustomHeading.configure({
         levels: [1, 2, 3, 4, 5, 6],
       }),
@@ -31,11 +38,21 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
           class: 'tiptap-link',
         },
       }),
+      CustomPlaceholder.configure({
+        placeholder: ({ node, pos }) => {
+          // 检查是否是第一个节点（位置为0的一级标题）
+          if (node.type.name === 'heading' && node.attrs.level === 1 && pos === 0) {
+            return '标题';
+          }
+          return '输入正文，输入“/”执行命令，点击”空格“执行AI生文，点击“TAB“执行切换元素标题';
+        },
+      }),
       SelectionHighlight,
       SlashCommandNode,
       MarkdownPaste,
+      ProtectedFirstHeading,
     ],
-    content: marked(markdown),
+    content: `<h1></h1>${marked(markdown)}`,
     editable: true,
   });
 

@@ -39,6 +39,7 @@
   background: #3c4043;
   color: #e8eaed;
   transition: border-color 0.2s ease;
+  box-sizing: border-box; /* 确保padding不会增加总宽度 */
 }
 
 .toc-search-input:focus {

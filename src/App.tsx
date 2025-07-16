@@ -8,24 +8,15 @@ function App() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const initialMarkdown = `欢迎使用功能丰富的 Tiptap 编辑器！左侧的目录会自动提取文档中的标题，点击可以快速跳转。
+  const initialMarkdown = `
 
-## 编辑器功能概览
+## 功能测试
 
-### 基础文本格式
-支持多种文本格式化选项：
-- **粗体文本** - 使用 **文本** 或 Ctrl+B
-- *斜体文本* - 使用 *文本* 或 Ctrl+I
-- ~~删除线~~ - 使用 ~~文本~~
-- \`行内代码\` - 使用反引号包围
+### 测试标题
+这是一个测试段落。
 
-### 列表功能
-#### 无序列表
-- 第一个列表项
-- 第二个列表项
-  - 嵌套列表项
-  - 另一个嵌套项
-- 第三个列表项
+### 另一个标题
+这是另一个测试段落。
 
 #### 有序列表
 1. 第一步操作
