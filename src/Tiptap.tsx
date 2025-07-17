@@ -1,20 +1,20 @@
-import { useEditor, EditorContent, Editor } from '@tiptap/react';
-import { useEffect } from 'react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import { marked } from 'marked';
-import { CustomHeading } from './extensions/CustomHeading';
-import { SlashCommandNode } from './extensions/SlashCommandNode';
-import { MarkdownPaste } from './extensions/MarkdownPaste';
-import { SelectionHighlight } from './extensions/SelectionHighlight';
-import { ProtectedFirstHeading } from './extensions/ProtectedFirstHeading';
-import { CustomPlaceholder } from './extensions/CustomPlaceholder';
-import { LinkHoverMenu } from './components/LinkHoverMenu';
-import { CustomTextSelectionMenu } from './components/CustomTextSelectionMenu';
-import { HoverIcon } from './components/HoverIcon';
-import { useHoverIcon } from './hooks/useHoverIcon';
+import { useEditor, EditorContent, Editor } from "@tiptap/react";
+import { useEffect } from "react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
+import { marked } from "marked";
+import { CustomHeading } from "./extensions/CustomHeading";
+import { SlashCommandNode } from "./extensions/SlashCommandNode";
+import { MarkdownPaste } from "./extensions/MarkdownPaste";
+import { SelectionHighlight } from "./extensions/SelectionHighlight";
+import { ProtectedFirstHeading } from "./extensions/ProtectedFirstHeading";
+import { CustomPlaceholder } from "./extensions/CustomPlaceholder";
+import { LinkHoverMenu } from "./components/LinkHoverMenu";
+import { CustomTextSelectionMenu } from "./components/CustomTextSelectionMenu";
+import { HoverIcon } from "./components/HoverIcon";
+import { useHoverIcon } from "./hooks/useHoverIcon";
 
-import './components/CustomTextSelectionMenu.css';
+import "./components/CustomTextSelectionMenu.css";
 
 interface TiptapProps {
   markdown: string;
@@ -35,16 +35,20 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
       }),
       Link.configure({
         HTMLAttributes: {
-          class: 'tiptap-link',
+          class: "tiptap-link",
         },
       }),
       CustomPlaceholder.configure({
         placeholder: ({ node, pos }) => {
           // 检查是否是第一个节点（位置为0的一级标题）
-          if (node.type.name === 'heading' && node.attrs.level === 1 && pos === 0) {
-            return '标题';
+          if (
+            node.type.name === "heading" &&
+            node.attrs.level === 1 &&
+            pos === 0
+          ) {
+            return "标题";
           }
-          return '输入正文，输入“/”执行命令，点击”空格“执行AI生文，点击“TAB“执行切换元素标题';
+          return "输入正文，输入“/”执行命令，点击”空格“执行AI生文，点击“TAB“执行切换元素标题";
         },
       }),
       SelectionHighlight,
@@ -60,14 +64,12 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
     iconStyle,
     highlightStyle,
     lockedHighlight,
-    bubbleCardState,
+    currentNodeInfo,
     handleMouseMove,
     handleMouseLeave,
     handleIconClick,
     handleIconMouseEnter,
     handleIconMouseLeave,
-    handleBubbleCardSubmit,
-    handleBubbleCardClose,
   } = useHoverIcon(editor?.view);
 
   // 编辑器准备就绪回调
@@ -85,15 +87,15 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
       };
 
       const editorElement = editor.view.dom;
-      editorElement.addEventListener('mousemove', handleDOMMouseMove);
+      editorElement.addEventListener("mousemove", handleDOMMouseMove);
 
       // 将编辑器实例添加到全局对象，方便调试（仅在开发环境）
-      if (typeof window !== 'undefined' && import.meta.env.DEV) {
+      if (typeof window !== "undefined" && import.meta.env.DEV) {
         (window as { editor?: Editor }).editor = editor;
       }
 
       return () => {
-        editorElement.removeEventListener('mousemove', handleDOMMouseMove);
+        editorElement.removeEventListener("mousemove", handleDOMMouseMove);
       };
     }
   }, [editor, handleMouseMove]);
@@ -111,12 +113,11 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
         iconStyle={iconStyle}
         highlightStyle={highlightStyle}
         lockedHighlight={lockedHighlight}
-        bubbleCardState={bubbleCardState}
         onIconClick={handleIconClick}
         onIconMouseEnter={handleIconMouseEnter}
         onIconMouseLeave={handleIconMouseLeave}
-        onBubbleCardSubmit={handleBubbleCardSubmit}
-        onBubbleCardClose={handleBubbleCardClose}
+        editor={editor}
+        currentNodeInfo={currentNodeInfo}
       />
 
       <EditorContent editor={editor} />

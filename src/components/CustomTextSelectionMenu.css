@@ -11,13 +11,14 @@
 
 /* 主菜单容器 */
 .custom-text-selection-menu {
-  background-color: white;
-  border: 0.5px solid rgba(128, 128, 128, 60%);
+  background-color: #17191C;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.7rem;
-  box-shadow: 0px 12px 33px 0px rgba(0, 0, 0, 0.06), 0px 3.618px 9.949px 0px rgba(0, 0, 0, 0.04);
+  box-shadow: 0px 12px 33px 0px rgba(0, 0, 0, 0.3), 0px 3.618px 9.949px 0px rgba(0, 0, 0, 0.2);
   z-index: 1001;
   min-width: 200px;
   max-width: 400px;
+  color: #ffffff;
 }
 
 /* 格式化按钮容器 */
@@ -41,10 +42,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #d1d5db;
 }
 
 .custom-text-selection-menu-buttons button:hover {
-  background-color: rgba(61, 37, 20, 0.12);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .custom-text-selection-menu-buttons button.is-active {
@@ -53,22 +55,22 @@
 }
 
 .custom-text-selection-menu-buttons button.ask-button {
-  background-color: #f0f0f0;
-  color: #333;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
   font-size: 12px;
   padding: 6px 12px;
   min-width: auto;
 }
 
 .custom-text-selection-menu-buttons button.ask-button:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 /* 分隔线 */
 .menu-divider {
   width: 1px;
   height: 20px;
-  background-color: rgba(128, 128, 128, 0.3);
+  background-color: rgba(255, 255, 255, 0.2);
   margin: 0 4px;
 }
 
@@ -88,11 +90,11 @@
   padding: 8px 12px;
   font-size: 14px;
   background-color: transparent;
-  color: #333;
+  color: #ffffff;
 }
 
 .custom-text-selection-ask-input input::placeholder {
-  color: #999;
+  color: #9ca3af;
 }
 
 .custom-text-selection-ask-input input:disabled {
@@ -133,15 +135,15 @@
   height: 32px;
   border: none;
   border-radius: 6px;
-  background-color: #f5f5f5;
-  color: #666;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-size: 12px;
 }
 
 .ask-cancel-button:hover {
-  background-color: #e0e0e0;
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 /* 加载动画 */

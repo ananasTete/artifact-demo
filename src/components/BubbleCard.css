@@ -4,14 +4,15 @@
   top: 32px; /* 图标高度(24px) + 间距(8px) */
   right: -4px; /* 右边缘与实际SVG图标右边缘对齐 (容器24px - SVG16px)/2 = 4px */
   z-index: 1000;
-  background: white;
-  border: 1px solid #e1e5e9;
+  background: #17191C;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   padding: 12px;
   min-width: 280px;
   max-width: 400px;
   animation: bubble-card-appear 0.2s ease-out;
+  color: #ffffff;
 }
 
 @keyframes bubble-card-appear {
@@ -34,20 +35,22 @@
 .bubble-card-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #d1d5db;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 6px;
   font-size: 14px;
   outline: none;
   transition: border-color 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .bubble-card-input:focus {
   border-color: #4285f4;
-  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.1);
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
 }
 
 .bubble-card-input:disabled {
-  background-color: #f9fafb;
+  background-color: rgba(255, 255, 255, 0.02);
   color: #6b7280;
   cursor: not-allowed;
 }
@@ -105,42 +108,7 @@
 
 
 
-/* 深色模式支持 */
-@media (prefers-color-scheme: dark) {
-  .bubble-card {
-    background: #1f2937;
-    border-color: #374151;
-    color: #f9fafb;
-  }
-
-  .bubble-card-input {
-    background: #374151;
-    border-color: #4b5563;
-    color: #f9fafb;
-  }
-
-  .bubble-card-input:focus {
-    border-color: #60a5fa;
-    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1);
-  }
-
-  .bubble-card-input:disabled {
-    background-color: #111827;
-    color: #6b7280;
-  }
-
-  .bubble-card-input::placeholder {
-    color: #6b7280;
-  }
-
-  .bubble-card-submit {
-    background: #3b82f6;
-  }
-
-  .bubble-card-submit:hover:not(:disabled) {
-    background: #2563eb;
-  }
-}
+/* 深色主题已作为默认主题 */
 
 /* 响应式设计 */
 @media (max-width: 768px) {
