@@ -9,6 +9,7 @@ import { MarkdownPaste } from "./extensions/MarkdownPaste";
 import { ProtectedFirstHeading } from "./extensions/ProtectedFirstHeading";
 import { CustomPlaceholder } from "./extensions/CustomPlaceholder";
 import { LinkHoverMenu } from "./components/LinkHoverMenu";
+import { NodeHoverIcon } from "./components/NodeHoverIcon";
 
 
 
@@ -55,21 +56,12 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
     editable: true,
   });
 
-
-
   // 编辑器准备就绪回调
   useEffect(() => {
     if (editor && onEditorReady) {
       onEditorReady(editor);
     }
   }, [editor, onEditorReady]);
-
-  // 将编辑器实例添加到全局对象，方便调试（仅在开发环境）
-  useEffect(() => {
-    if (editor && typeof window !== "undefined" && import.meta.env.DEV) {
-      (window as { editor?: Editor }).editor = editor;
-    }
-  }, [editor]);
 
   if (!editor) {
     return null;
@@ -78,6 +70,7 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
   return (
     <div className="editor-wrapper">
       <LinkHoverMenu editor={editor} />
+      <NodeHoverIcon editor={editor} />
       <EditorContent editor={editor} />
     </div>
   );
