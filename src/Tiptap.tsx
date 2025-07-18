@@ -6,15 +6,11 @@ import { marked } from "marked";
 import { CustomHeading } from "./extensions/CustomHeading";
 import { SlashCommandNode } from "./extensions/SlashCommandNode";
 import { MarkdownPaste } from "./extensions/MarkdownPaste";
-import { SelectionHighlight } from "./extensions/SelectionHighlight";
 import { ProtectedFirstHeading } from "./extensions/ProtectedFirstHeading";
 import { CustomPlaceholder } from "./extensions/CustomPlaceholder";
 import { LinkHoverMenu } from "./components/LinkHoverMenu";
-import { CustomTextSelectionMenu } from "./components/CustomTextSelectionMenu";
-import { HoverIcon } from "./components/HoverIcon";
-import { useHoverIcon } from "./hooks/useHoverIcon";
 
-import "./components/CustomTextSelectionMenu.css";
+
 
 interface TiptapProps {
   markdown: string;
@@ -51,7 +47,6 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
           return "输入正文，输入“/”执行命令，点击”空格“执行AI生文，点击“TAB“执行切换元素标题";
         },
       }),
-      SelectionHighlight,
       SlashCommandNode,
       MarkdownPaste,
       ProtectedFirstHeading,
@@ -60,17 +55,7 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
     editable: true,
   });
 
-  const {
-    iconStyle,
-    highlightStyle,
-    lockedHighlight,
-    currentNodeInfo,
-    handleMouseMove,
-    handleMouseLeave,
-    handleIconClick,
-    handleIconMouseEnter,
-    handleIconMouseLeave,
-  } = useHoverIcon(editor?.view);
+
 
   // 编辑器准备就绪回调
   useEffect(() => {
@@ -79,47 +64,20 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
     }
   }, [editor, onEditorReady]);
 
-  // 添加鼠标移动事件处理
+  // 将编辑器实例添加到全局对象，方便调试（仅在开发环境）
   useEffect(() => {
-    if (editor?.view) {
-      const handleDOMMouseMove = (event: MouseEvent) => {
-        handleMouseMove(editor.view, event);
-      };
-
-      const editorElement = editor.view.dom;
-      editorElement.addEventListener("mousemove", handleDOMMouseMove);
-
-      // 将编辑器实例添加到全局对象，方便调试（仅在开发环境）
-      if (typeof window !== "undefined" && import.meta.env.DEV) {
-        (window as { editor?: Editor }).editor = editor;
-      }
-
-      return () => {
-        editorElement.removeEventListener("mousemove", handleDOMMouseMove);
-      };
+    if (editor && typeof window !== "undefined" && import.meta.env.DEV) {
+      (window as { editor?: Editor }).editor = editor;
     }
-  }, [editor, handleMouseMove]);
+  }, [editor]);
 
   if (!editor) {
     return null;
   }
 
   return (
-    <div className="editor-wrapper" onMouseLeave={handleMouseLeave}>
+    <div className="editor-wrapper">
       <LinkHoverMenu editor={editor} />
-      <CustomTextSelectionMenu editor={editor} />
-
-      <HoverIcon
-        iconStyle={iconStyle}
-        highlightStyle={highlightStyle}
-        lockedHighlight={lockedHighlight}
-        onIconClick={handleIconClick}
-        onIconMouseEnter={handleIconMouseEnter}
-        onIconMouseLeave={handleIconMouseLeave}
-        editor={editor}
-        currentNodeInfo={currentNodeInfo}
-      />
-
       <EditorContent editor={editor} />
     </div>
   );

@@ -1,4 +1,9 @@
-import type { NodeInfo } from '../hooks/useHoverIcon';
+export interface NodeInfo {
+  startPos: number;
+  endPos: number;
+  nodeType: string;
+  level?: number;
+}
 
 export interface ProcessTextRequest {
   originalText: string;

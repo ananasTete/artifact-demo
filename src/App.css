@@ -88,22 +88,7 @@
   max-width: 800px;
 }
 
-/* 文本节点高亮背景覆盖层 */
-.text-node-highlight {
-  position: absolute;
-  background-color: rgba(66, 133, 244, 0.12); /* 统一使用更深的蓝色背景 */
-  border: 1px solid rgba(66, 133, 244, 0.2); /* 统一添加边框 */
-  box-shadow: 0 0 0 1px rgba(66, 133, 244, 0.1); /* 统一添加外发光效果 */
-  border-radius: 4px;
-  pointer-events: none; /* 不阻挡鼠标事件 */
-  z-index: 1; /* 在文本下方，但在编辑器背景上方 */
-  transition: all 0.2s ease-in-out;
-}
 
-/* 锁定状态的高亮覆盖层（现在样式与悬浮时一致） */
-.text-node-highlight.locked {
-  z-index: 2; /* 比普通高亮层级更高 */
-}
 
 /* 响应式设计 - 在小屏幕上调整位置 */
 @media (max-width: 768px) {
@@ -112,23 +97,7 @@
   }
 }
 
-/* 深色模式支持 */
-@media (prefers-color-scheme: dark) {
-  .text-node-highlight {
-    background-color: rgba(255, 255, 255, 0.15); /* 深色模式下统一使用更深的白色背景 */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* 深色模式下统一的边框 */
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1); /* 深色模式下统一的外发光 */
-  }
 
-  .paragraph-hover-icon {
-    color: #888;
-  }
-
-  .paragraph-hover-icon:hover {
-    color: #fff;
-    background-color: #333;
-  }
-}
 
 .ProseMirror {
   background-color: #1a1a1a;
@@ -158,19 +127,7 @@
   cursor: pointer;
 }
 
-/* 文本选择高亮样式 */
-.ProseMirror .text-selection-highlight {
-  background-color: #b3d4fc;
-  /* 使用浏览器默认选择背景色 */
-  background-color: rgba(0, 123, 255, 0.3);
-}
 
-/* 深色模式下的选择高亮 */
-@media (prefers-color-scheme: dark) {
-  .ProseMirror .text-selection-highlight {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
 
 .ProseMirror .tiptap-link:hover {
   color: #1557b0;
