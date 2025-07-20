@@ -12,6 +12,7 @@ export const NodeHoverIcon = ({ editor }: NodeHoverIconProps) => {
     top: number;
     left: number;
     height: number;
+    pos: number; // <-- Add node position to state
   } | null>(null);
   const [overlayInfo, setOverlayInfo] = useState<{
     top: number;
@@ -35,8 +36,12 @@ export const NodeHoverIcon = ({ editor }: NodeHoverIconProps) => {
       // 查找最近的块级节点
       const blockNode = target.closest(
         "p, h1, h2, h3, h4, h5, h6, li, blockquote, pre, div[data-type]"
-      );
+      ) as HTMLElement;
       if (!blockNode) return;
+
+      // Get the node's document position from its DOM element
+      const pos = editor.view.posAtDOM(blockNode, 0);
+      if (pos === undefined) return;
 
       // 获取节点和编辑器包装器的位置信息
       const nodeRect = blockNode.getBoundingClientRect();
@@ -50,6 +55,7 @@ export const NodeHoverIcon = ({ editor }: NodeHoverIconProps) => {
         top,
         left: wrapperRect.width,
         height,
+        pos, // <-- Store the position
       });
       setOverlayInfo({
         top,
@@ -108,6 +114,24 @@ export const NodeHoverIcon = ({ editor }: NodeHoverIconProps) => {
     setOverlayInfo(null);
   };
 
+  const handleClick = () => {
+    if (!containerInfo) return;
+
+    const { pos } = containerInfo;
+    const node = editor.state.doc.nodeAt(pos);
+    if (!node) return;
+
+    // Hide the icon and overlay
+    setIsHovering(false);
+    setContainerInfo(null);
+    setOverlayInfo(null);
+
+    // Calculate selection range and apply it
+    const from = pos;
+    const to = pos + node.nodeSize;
+    editor.chain().focus().setTextSelection({ from, to }).run();
+  };
+
   if (!containerInfo) return null;
 
   return (
@@ -144,6 +168,7 @@ export const NodeHoverIcon = ({ editor }: NodeHoverIconProps) => {
         }}
         onMouseEnter={handleContainerMouseEnter}
         onMouseLeave={handleContainerMouseLeave}
+        onClick={handleClick}
       >
         <img
           src={HoverNodeIcon}

@@ -1,0 +1,86 @@
+.bubble-menu-container {
+  display: flex;
+  background-color: #333;
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bubble-menu-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.bubble-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.bubble-btn:hover {
+  background-color: #555;
+}
+
+.bubble-btn.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.bubble-divider {
+  width: 1px;
+  height: 16px;
+  background-color: #555;
+  margin: 0 6px;
+}
+
+.bubble-input-form {
+  display: flex;
+  align-items: center;
+}
+
+.bubble-input {
+  background-color: #444;
+  border: 1px solid #666;
+  color: #fff;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 14px;
+  outline: none;
+}
+
+.bubble-input::placeholder {
+  color: #999;
+}
+
+.bubble-input-actions {
+  display: flex;
+  margin-left: 8px;
+}
+
+.bubble-submit {
+  font-size: 18px;
+}
+
+.bubble-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Style for our new persistent highlight decoration */
+.persistent-highlight {
+  background-color: #3399ff66; /* A semi-transparent blue */
+
+  /*
+   * 使用在 index.css 中定义的 CSS 变量来设置垂直内边距。
+   * var() 函数会使用 --highlight-padding 变量的值。
+   * 如果该变量未定义（例如，高亮在一个没有设置该变量的元素中），
+   * 则会使用第二个参数 0.15em 作为备用值 (fallback)。
+   * 这使得我们的高亮效果能够自适应不同的文本容器（p, h1, h2 等）。
+   */
+  padding: var(--highlight-padding, 0.15em) 0;
+}

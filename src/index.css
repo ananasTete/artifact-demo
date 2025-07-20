@@ -59,6 +59,40 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* --- 自定义高亮变量 --- */
+/*
+ * 问题背景:
+ * 浏览器原生的文字高亮，其背景色会填满整行的高度 (line-height)。
+ * 而我们用 span 元素模拟的高亮，其背景色默认只覆盖文字本身的高度。
+ * 这导致我们的自定义高亮看起来比原生高亮“矮”。
+ *
+ * 解决方案:
+ * 通过给高亮 span 添加垂直方向的 padding，将背景撑高，以模拟原生高亮的效果。
+ *
+ * 进一步挑战:
+ * 不同类型的文本（如段落 p 和标题 h1）具有不同的 line-height 与 font-size 的比例。
+ * 这导致一个固定的 padding 值无法同时完美适配所有情况（例如 p 元素需要更大的 padding）。
+ *
+ * 最终方案: CSS 自定义属性 (CSS 变量)
+ * 我们为不同类型的元素分别定义一个 --highlight-padding 变量。
+ * 这样，高亮效果就可以根据其所在的容器（p 或 h1）动态地应用最合适的 padding 值。
+ */
+.tiptap p {
+  /* 段落的行高通常较富余，需要更大的 padding */
+  --highlight-padding: 0.2em;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4,
+.tiptap h5,
+.tiptap h6 {
+  /* 标题的行高通常较紧凑，需要较小的 padding */
+  --highlight-padding: 0.1em;
+}
+/* --- 自定义高亮变量结束 --- */
+
 /* Tiptap Placeholder 样式 */
 .tiptap p.is-editor-empty:first-child::before {
   color: #888;

@@ -8,10 +8,11 @@ import { SlashCommandNode } from "./extensions/SlashCommandNode";
 import { MarkdownPaste } from "./extensions/MarkdownPaste";
 import { ProtectedFirstHeading } from "./extensions/ProtectedFirstHeading";
 import { CustomPlaceholder } from "./extensions/CustomPlaceholder";
+import { PersistentSelectionHighlight } from "./extensions/PersistentSelectionHighlight";
 import { LinkHoverMenu } from "./components/LinkHoverMenu";
+import { SelectionBubbleMenu } from "./components/SelectionBubbleMenu";
+import "./components/SelectionBubbleMenu.css";
 import { NodeHoverIcon } from "./components/NodeHoverIcon";
-
-
 
 interface TiptapProps {
   markdown: string;
@@ -51,6 +52,7 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
       SlashCommandNode,
       MarkdownPaste,
       ProtectedFirstHeading,
+      PersistentSelectionHighlight,
     ],
     content: `<h1></h1>${marked(markdown)}`,
     editable: true,
@@ -70,6 +72,7 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
   return (
     <div className="editor-wrapper">
       <LinkHoverMenu editor={editor} />
+      <SelectionBubbleMenu editor={editor} />
       <NodeHoverIcon editor={editor} />
       <EditorContent editor={editor} />
     </div>
