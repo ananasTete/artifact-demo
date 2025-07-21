@@ -118,18 +118,43 @@ export const NodeHoverIcon = ({ editor }: NodeHoverIconProps) => {
     if (!containerInfo) return;
 
     const { pos } = containerInfo;
-    const node = editor.state.doc.nodeAt(pos);
-    if (!node) return;
 
     // Hide the icon and overlay
     setIsHovering(false);
     setContainerInfo(null);
     setOverlayInfo(null);
 
-    // Calculate selection range and apply it
-    const from = pos;
-    const to = pos + node.nodeSize;
-    editor.chain().focus().setTextSelection({ from, to }).run();
+    // 找到块级节点的完整范围
+    const resolvedPos = editor.state.doc.resolve(pos);
+    let blockNode = null;
+    let blockStart = pos;
+    let blockEnd = pos;
+
+    // 向上查找块级节点
+    for (let depth = resolvedPos.depth; depth >= 0; depth--) {
+      const node = resolvedPos.node(depth);
+      if (node.isBlock && node.type.name !== 'doc') {
+        blockNode = node;
+        blockStart = resolvedPos.start(depth);
+        blockEnd = resolvedPos.end(depth);
+        break;
+      }
+    }
+
+    if (blockNode) {
+      // 选中整个块级节点的内容（不包括节点标记本身）
+      const from = blockStart;
+      const to = blockEnd;
+      editor.chain().focus().setTextSelection({ from, to }).run();
+    } else {
+      // 如果没有找到块级节点，使用原来的逻辑作为后备
+      const node = editor.state.doc.nodeAt(pos);
+      if (node) {
+        const from = pos;
+        const to = pos + node.nodeSize;
+        editor.chain().focus().setTextSelection({ from, to }).run();
+      }
+    }
   };
 
   if (!containerInfo) return null;
