@@ -84,3 +84,53 @@
    */
   padding: var(--highlight-padding, 0.15em) 0;
 }
+
+.bubble-confirmation-menu {
+  display: flex;
+  flex-direction: column;
+  width: 100%; /* Make it span the editor width */
+  min-width: 300px; /* Adjust as needed */
+  background-color: #333;
+  padding: 8px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.confirmation-text {
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding: 4px;
+  background-color: #444;
+  border-radius: 4px;
+  word-break: break-word; /* Ensure long text wraps */
+}
+
+.confirmation-actions {
+  display: flex;
+  justify-content: flex-start; /* Align buttons to the left */
+  gap: 8px; /* Space between buttons */
+  margin-top: auto; /* Push buttons to the bottom */
+}
+
+.bubble-replace,
+.bubble-discard {
+  padding: 6px 12px;
+  font-size: 14px;
+}
+
+.bubble-replace {
+  background-color: #007bff;
+}
+
+.bubble-replace:hover {
+  background-color: #0056b3;
+}
+
+.bubble-discard {
+  background-color: #dc3545;
+}
+
+.bubble-discard:hover {
+  background-color: #c82333;
+}

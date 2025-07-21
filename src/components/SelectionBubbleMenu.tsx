@@ -16,6 +16,8 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
 }) => {
   const [showInput, setShowInput] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [showConfirmationMenu, setShowConfirmationMenu] = useState(false);
+  const [submittedValue, setSubmittedValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Get the state of our custom highlight plugin
@@ -55,23 +57,36 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      // 这里可以调用 API 或执行其他操作
-      console.log("提交的内容:", inputValue);
-
-      // 模拟 API 调用，替换选中的文本
-      const { from, to } = editor.state.selection;
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from, to })
-        .insertContent(inputValue)
-        .run();
-
-      // 重置状态
-      setInputValue("");
+      setSubmittedValue(inputValue.trim());
       setShowInput(false);
-      editor.chain().focus().clearPersistentSelection().run();
+      setShowConfirmationMenu(true);
     }
+  };
+
+  const handleReplace = () => {
+    const { from, to } = editor.state.selection;
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from, to })
+      .insertContent(submittedValue)
+      .run();
+    
+    // 重置所有状态并关闭菜单
+    setInputValue("");
+    setSubmittedValue("");
+    setShowInput(false);
+    setShowConfirmationMenu(false);
+    editor.chain().focus().clearPersistentSelection().run();
+  };
+
+  const handleDiscard = () => {
+    // 重置所有状态并关闭菜单
+    setInputValue("");
+    setSubmittedValue("");
+    setShowInput(false);
+    setShowConfirmationMenu(false);
+    editor.chain().focus().clearPersistentSelection().run();
   };
 
 
@@ -92,16 +107,17 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
         getReferenceClientRect,
         onHidden: () => {
           setShowInput(false);
+          setShowConfirmationMenu(false); // 隐藏时也关闭确认菜单
           editor.chain().focus().clearPersistentSelection().run();
         },
       }}
       shouldShow={({ state }) => {
         const hasTextSelection = isTextSelection(state.selection) && state.selection.from !== state.selection.to;
-        return hasTextSelection || highlightState.isActive;
+        return hasTextSelection || highlightState.isActive || showConfirmationMenu;
       }}
     >
       <div className="bubble-menu-container">
-        {!showInput ? (
+        {!showInput && !showConfirmationMenu ? (
           // 默认的格式化按钮
           <div className="bubble-menu-buttons">
             <button
@@ -154,7 +170,7 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
               ✏️
             </button>
           </div>
-        ) : (
+        ) : showInput ? (
           // 输入框模式
           <form onSubmit={handleSubmit} className="bubble-input-form">
             <input
@@ -175,6 +191,25 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
               </button>
             </div>
           </form>
+        ) : (
+          // 确认菜单模式
+          <div className="bubble-confirmation-menu">
+            <div className="confirmation-text">{submittedValue}</div>
+            <div className="confirmation-actions">
+              <button
+                onClick={handleReplace}
+                className="bubble-btn bubble-replace"
+              >
+                替换
+              </button>
+              <button
+                onClick={handleDiscard}
+                className="bubble-btn bubble-discard"
+              >
+                弃用
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </BubbleMenu>
