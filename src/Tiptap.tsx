@@ -31,7 +31,9 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
       CustomHeading.configure({
         levels: [1, 2, 3, 4, 5, 6],
       }),
-      Link.configure({
+      Link.extend({
+        inclusive: false, // 防止光标在链接末尾时自动扩展链接
+      }).configure({
         HTMLAttributes: {
           class: "tiptap-link",
         },

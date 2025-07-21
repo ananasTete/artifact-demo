@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect, useMemo } from 'react';
 import type { Editor } from '@tiptap/react';
 
 interface LinkHoverMenuProps {
@@ -15,47 +15,52 @@ interface MenuState {
   linkPosition: { from: number; to: number } | null;
 }
 
-// 防抖 hook
-const useDebounce = <T extends unknown[]>(callback: (...args: T) => void, delay: number) => {
-  const timeoutRef = useRef<number | null>(null);
-
-  return useCallback((...args: T) => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    timeoutRef.current = setTimeout(() => callback(...args), delay);
-  }, [callback, delay]);
+const INITIAL_MENU_STATE: MenuState = {
+  visible: false,
+  x: 0,
+  y: 0,
+  linkUrl: '',
+  linkText: '',
+  linkElement: null,
+  linkPosition: null,
 };
 
+
 export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
-  const [menuState, setMenuState] = useState<MenuState>({
-    visible: false,
-    x: 0,
-    y: 0,
-    linkUrl: '',
-    linkText: '',
-    linkElement: null,
-    linkPosition: null,
-  });
+  const [menuState, setMenuState] = useState<MenuState>(INITIAL_MENU_STATE);
   const [isEditing, setIsEditing] = useState(false);
   const [needsRepositioning, setNeedsRepositioning] = useState(false);
+  const [editingUrl, setEditingUrl] = useState('');
+  const [editingText, setEditingText] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
   const editingMenuRef = useRef<HTMLDivElement>(null);
   const hideTimeoutRef = useRef<number | null>(null);
   const ignoreHoverRef = useRef<boolean>(false);
 
-  // 获取链接信息
+  // 公共的状态重置函数
+  const resetMenuState = useCallback(() => {
+    setMenuState(prev => ({
+      ...prev,
+      visible: false,
+      linkElement: null,
+      linkPosition: null
+    }));
+  }, []);
+
+  // 获取链接信息（优化版本）
   const getLinkInfo = useCallback((element: HTMLElement) => {
     const href = element.getAttribute('href') || '';
     const text = element.textContent || '';
     return { url: href, text };
   }, []);
 
-  // 获取链接在编辑器中的位置
+  // 获取链接在编辑器中的位置（优化版本）
   const getLinkPosition = useCallback((linkElement: HTMLElement): { from: number; to: number } | null => {
     const { state } = editor;
     const { doc } = state;
     const linkUrl = linkElement.getAttribute('href') || '';
+
+    if (!linkUrl) return null;
 
     let linkPos: { from: number; to: number } | null = null;
     doc.descendants((node, pos) => {
@@ -73,71 +78,104 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
     return linkPos;
   }, [editor]);
 
+  // 缓存菜单尺寸配置
+  const menuDimensions = useMemo(() => ({
+    default: { width: 280, height: 90 },
+    editing: { width: 280, height: 200 }
+  }), []);
+
   // 获取菜单的实际尺寸（动态测量）
   const getMenuDimensions = useCallback(() => {
-    // 根据当前模式选择正确的 ref
     const currentMenuRef = isEditing ? editingMenuRef : menuRef;
 
     if (!currentMenuRef.current) {
-      // 如果菜单还没有渲染，返回默认尺寸
-      return { width: 280, height: isEditing ? 200 : 90 };
+      return isEditing ? menuDimensions.editing : menuDimensions.default;
     }
 
     const rect = currentMenuRef.current.getBoundingClientRect();
     return { width: rect.width, height: rect.height };
-  }, [isEditing]);
+  }, [isEditing, menuDimensions]);
 
-  // 计算菜单位置，处理边缘遮挡
-  const calculateMenuPosition = useCallback((linkElement: HTMLElement) => {
-    const rect = linkElement.getBoundingClientRect();
+  // 缓存常用的计算常量
+  const positionConstants = useMemo(() => ({
+    padding: 10,
+    gap: 8
+  }), []);
+
+  // 计算水平位置，处理左右边缘
+  const calculateHorizontalPosition = useCallback((
+    linkRect: DOMRect,
+    wrapperRect: DOMRect,
+    menuWidth: number,
+    padding: number
+  ) => {
+    const relativeLinkLeft = linkRect.left - wrapperRect.left;
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
 
-    // 使用实际测量的菜单尺寸
-    const { width: menuWidth, height: menuHeight } = getMenuDimensions();
+    let x = relativeLinkLeft + linkRect.width / 2;
+    const menuAbsoluteLeft = wrapperRect.left + x - menuWidth / 2;
 
-    const padding = 10; // 距离屏幕边缘的最小距离
-    const gap = 8; // 菜单与链接之间的间距
-
-    // 默认位置：链接下方居中
-    let x = rect.left + rect.width / 2;
-    let y = rect.bottom + gap;
-
-    // 处理水平方向的边缘遮挡
-    if (x - menuWidth / 2 < padding) {
-      // 左边缘遮挡，调整到左边缘 + padding
-      x = padding + menuWidth / 2;
-    } else if (x + menuWidth / 2 > viewportWidth - padding) {
-      // 右边缘遮挡，调整到右边缘 - padding
-      x = viewportWidth - padding - menuWidth / 2;
+    if (menuAbsoluteLeft < padding) {
+      x = padding - wrapperRect.left + menuWidth / 2;
+    } else if (menuAbsoluteLeft + menuWidth > viewportWidth - padding) {
+      x = (viewportWidth - padding) - wrapperRect.left - menuWidth / 2;
     }
 
-    // 处理垂直方向的边缘遮挡
-    if (y + menuHeight > viewportHeight - padding) {
-      // 下方空间不足，显示在链接上方
-      y = rect.top - menuHeight - gap;
+    return x;
+  }, []);
 
-      // 如果上方空间也不足，则显示在视口内最佳位置
-      if (y < padding) {
-        // 如果上下都不够，优先选择空间更大的一侧
-        const spaceBelow = viewportHeight - rect.bottom;
-        const spaceAbove = rect.top;
+  // 计算垂直位置，处理上下边缘
+  const calculateVerticalPosition = useCallback((
+    linkRect: DOMRect,
+    wrapperRect: DOMRect,
+    menuHeight: number,
+    padding: number,
+    gap: number
+  ) => {
+    const relativeLinkTop = linkRect.top - wrapperRect.top;
+    const viewportHeight = window.innerHeight;
+
+    let y = relativeLinkTop + linkRect.height + gap;
+    const menuAbsoluteBottom = wrapperRect.top + y + menuHeight;
+
+    if (menuAbsoluteBottom > viewportHeight - padding) {
+      y = relativeLinkTop - menuHeight - gap;
+
+      const menuAbsoluteTop = wrapperRect.top + y;
+      if (menuAbsoluteTop < padding) {
+        const spaceBelow = viewportHeight - linkRect.bottom;
+        const spaceAbove = linkRect.top;
 
         if (spaceBelow > spaceAbove) {
-          // 下方空间更大，显示在下方但限制在视口内
-          y = rect.bottom + gap;
-          if (y + menuHeight > viewportHeight - padding) {
-            y = viewportHeight - padding - menuHeight;
+          y = relativeLinkTop + linkRect.height + gap;
+          if (wrapperRect.top + y + menuHeight > viewportHeight - padding) {
+            y = (viewportHeight - padding) - wrapperRect.top - menuHeight;
           }
         } else {
-          // 上方空间更大，显示在上方
-          y = padding;
+          y = padding - wrapperRect.top;
         }
       }
     }
 
+    return y;
+  }, []);
+
+  // 计算菜单位置，处理边缘遮挡
+  const calculateMenuPosition = useCallback((linkElement: HTMLElement) => {
+    const editorWrapper = document.querySelector('.editor-wrapper');
+    if (!editorWrapper) {
+      return { x: 0, y: 0 };
+    }
+
+    const linkRect = linkElement.getBoundingClientRect();
+    const wrapperRect = editorWrapper.getBoundingClientRect();
+    const { width: menuWidth, height: menuHeight } = getMenuDimensions();
+
+    const x = calculateHorizontalPosition(linkRect, wrapperRect, menuWidth, positionConstants.padding);
+    const y = calculateVerticalPosition(linkRect, wrapperRect, menuHeight, positionConstants.padding, positionConstants.gap);
+
     return { x, y };
-  }, [getMenuDimensions]);
+  }, [getMenuDimensions, calculateHorizontalPosition, calculateVerticalPosition, positionConstants]);
 
   // 显示菜单
   const showMenu = useCallback((_event: MouseEvent, linkElement: HTMLElement) => {
@@ -162,7 +200,7 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
       setIsEditing(false);
       setNeedsRepositioning(true); // 标记需要重新定位
     } catch (error) {
-
+      console.error("Error showing menu:", error);
     }
   }, [getLinkInfo, getLinkPosition]);
 
@@ -177,15 +215,10 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
       clearTimeout(hideTimeoutRef.current);
     }
     hideTimeoutRef.current = setTimeout(() => {
-      setMenuState(prev => ({
-        ...prev,
-        visible: false,
-        linkElement: null,
-        linkPosition: null
-      }));
+      resetMenuState();
       setIsEditing(false);
     }, 100);
-  }, [isEditing]);
+  }, [isEditing, resetMenuState]);
 
   // 取消隐藏菜单
   const cancelHideMenu = useCallback(() => {
@@ -197,7 +230,6 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
 
   // 统一的菜单定位逻辑，避免多个 useLayoutEffect 冲突
   useLayoutEffect(() => {
-    // 检查是否需要重新定位菜单
     const currentMenuRef = isEditing ? editingMenuRef : menuRef;
     const shouldReposition = (needsRepositioning || isEditing) &&
                              menuState.visible &&
@@ -205,10 +237,8 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
                              currentMenuRef.current;
 
     if (shouldReposition) {
-      // 使用 requestAnimationFrame 确保 DOM 更新完成后再计算位置
       const updatePosition = () => {
         try {
-          // 再次检查元素是否仍然存在
           if (menuState.linkElement && document.contains(menuState.linkElement) && currentMenuRef.current) {
             const { x, y } = calculateMenuPosition(menuState.linkElement);
             setMenuState(prev => ({
@@ -217,23 +247,19 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
               y
             }));
             setNeedsRepositioning(false);
+          } else {
+            resetMenuState();
+            setNeedsRepositioning(false);
           }
-        } catch (error) {
-
-          // 如果定位失败，隐藏菜单
-          setMenuState(prev => ({
-            ...prev,
-            visible: false,
-            linkElement: null,
-            linkPosition: null
-          }));
+        } catch {
+          resetMenuState();
           setNeedsRepositioning(false);
         }
       };
 
       requestAnimationFrame(updatePosition);
     }
-  }, [needsRepositioning, isEditing, menuState.visible, menuState.linkElement, calculateMenuPosition]);
+  }, [needsRepositioning, isEditing, menuState.visible, menuState.linkElement, calculateMenuPosition, resetMenuState]);
 
   // 处理链接悬停
   useEffect(() => {
@@ -315,15 +341,7 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
       }
 
       // 重置所有状态
-      setMenuState({
-        visible: false,
-        x: 0,
-        y: 0,
-        linkUrl: '',
-        linkText: '',
-        linkElement: null,
-        linkPosition: null,
-      });
+      setMenuState(INITIAL_MENU_STATE);
       setIsEditing(false);
       setNeedsRepositioning(false);
 
@@ -332,32 +350,30 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
     };
   }, []);
 
-  // 处理菜单悬停
-  const handleMenuMouseEnter = useCallback(() => {
-    cancelHideMenu();
-  }, [cancelHideMenu]);
-
-  const handleMenuMouseLeave = useCallback(() => {
-    // 如果当前是编辑模式，不响应鼠标移出事件
-    if (isEditing) {
-      return;
+  // 优化的菜单悬停处理
+  const menuEventHandlers = useMemo(() => ({
+    onMouseEnter: () => cancelHideMenu(),
+    onMouseLeave: () => {
+      if (!isEditing) {
+        hideMenu();
+      }
     }
-    hideMenu();
-  }, [hideMenu, isEditing]);
+  }), [cancelHideMenu, hideMenu, isEditing]);
 
   // 编辑链接
   const handleEdit = useCallback(() => {
     setIsEditing(true);
-  }, []);
+    setEditingUrl(menuState.linkUrl); // 初始化编辑URL
+    setEditingText(menuState.linkText); // 初始化编辑文本
+  }, [menuState.linkUrl, menuState.linkText]);
 
   // 复制链接
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(menuState.linkUrl);
-
       hideMenu();
-    } catch (err) {
-
+    } catch {
+      // 静默处理复制失败
     }
   }, [menuState.linkUrl, hideMenu]);
 
@@ -374,15 +390,22 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
     }
     setIsEditing(false);
     // 立即隐藏菜单，而不是等待延迟
-    setMenuState(prev => ({
-      ...prev,
-      visible: false,
-      linkElement: null,
-      linkPosition: null
-    }));
-  }, [editor, menuState.linkPosition]);
+    resetMenuState();
+  }, [editor, menuState.linkPosition, resetMenuState]);
 
-  // 优化的链接更新逻辑
+  // 保存编辑（现在主要用于关闭编辑模式）
+  const handleSave = useCallback(() => {
+    setIsEditing(false);
+
+    ignoreHoverRef.current = true;
+    resetMenuState();
+
+    setTimeout(() => {
+      ignoreHoverRef.current = false;
+    }, 200);
+  }, [resetMenuState]);
+
+  // 优化的链接更新逻辑 - 避免选择和光标定位
   const updateLink = useCallback((newUrl: string, newText: string) => {
     if (!menuState.linkPosition) {
       return;
@@ -390,70 +413,56 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
 
     const { from, to } = menuState.linkPosition;
 
-    // 使用 Tiptap 的链式命令来简化更新逻辑
-    editor
-      .chain()
-      .focus()
-      .setTextSelection({ from, to })
-      .command(({ tr, state }) => {
-        // 如果文本改变了，替换内容
-        if (newText && newText !== menuState.linkText) {
-          tr.replaceWith(from, to, state.schema.text(newText));
+    // 使用 Transaction 直接更新，避免选择链接节点
+    const tr = editor.state.tr;
 
-          // 更新位置信息
-          const newTo = from + newText.length;
-          setMenuState(prev => ({
-            ...prev,
-            linkPosition: { from, to: newTo },
-            linkText: newText,
-            linkUrl: newUrl
-          }));
-        } else {
-          // 只更新 URL
-          setMenuState(prev => ({
-            ...prev,
-            linkUrl: newUrl
-          }));
-        }
+    // 如果需要更新文本内容
+    if (newText && newText !== menuState.linkText) {
+      // 替换文本内容
+      tr.replaceWith(from, to, editor.state.schema.text(newText));
 
-        return true;
-      })
-      .run();
+      // 计算新的结束位置
+      const finalTo = from + newText.length;
 
-    // 设置或移除链接标记
-    if (newUrl) {
-      const newTo = newText && newText !== menuState.linkText
-        ? from + newText.length
-        : to;
-      editor.chain().focus().setTextSelection({ from, to: newTo }).setLink({ href: newUrl }).run();
+      // 更新链接标记
+      if (newUrl) {
+        tr.addMark(from, finalTo, editor.state.schema.marks.link.create({ href: newUrl }));
+      }
+
+      // 更新本地状态
+      setMenuState(prev => ({
+        ...prev,
+        linkPosition: { from, to: finalTo },
+        linkText: newText,
+        linkUrl: newUrl
+      }));
     } else {
-      editor.chain().focus().setTextSelection({ from, to }).unsetLink().run();
+      // 只更新 URL，不改变文本
+      if (newUrl) {
+        // 移除旧的链接标记并添加新的
+        tr.removeMark(from, to, editor.state.schema.marks.link);
+        tr.addMark(from, to, editor.state.schema.marks.link.create({ href: newUrl }));
+      } else {
+        // 移除链接标记
+        tr.removeMark(from, to, editor.state.schema.marks.link);
+      }
+
+      // 更新本地状态
+      setMenuState(prev => ({
+        ...prev,
+        linkUrl: newUrl
+      }));
     }
+
+    // 应用事务，不设置选择状态，让编辑器保持当前状态
+    editor.view.dispatch(tr);
   }, [editor, menuState.linkPosition, menuState.linkText]);
 
-  // 防抖的更新函数
-  const debouncedUpdateLink = useDebounce(updateLink, 300);
-
-  // 保存编辑（现在主要用于关闭编辑模式）
-  const handleSave = useCallback(() => {
-    setIsEditing(false);
-
-    // 设置忽略悬停事件标志位，防止菜单意外重新出现
-    ignoreHoverRef.current = true;
-
-    // 立即隐藏菜单，而不是通过延迟的 hideMenu
-    setMenuState(prev => ({
-      ...prev,
-      visible: false,
-      linkElement: null,
-      linkPosition: null
-    }));
-
-    // 200ms 后恢复悬停事件响应
-    setTimeout(() => {
-      ignoreHoverRef.current = false;
-    }, 200);
-  }, []);
+  // 处理更新按钮点击
+  const handleUpdate = useCallback(() => {
+    updateLink(editingUrl, editingText);
+    handleSave(); // 更新后关闭编辑模式
+  }, [updateLink, editingUrl, editingText, handleSave]);
 
   // 处理键盘事件
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -488,65 +497,68 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
           onClick={handleOverlayClick}
           style={{
             display: isEditing && menuState.visible ? 'block' : 'none',
+            zIndex: 1000, // 调整 z-index，使其低于编辑菜单
           }}
+        />
+
+        {/* 编辑模式：编辑菜单 */}
+        <div
+          ref={editingMenuRef}
+          className={`link-hover-menu editing`}
+          style={{
+            position: 'absolute',
+            left: menuState.x,
+            top: menuState.y,
+            transform: 'translateX(-50%)',
+            zIndex: 1001,
+            display: isEditing && menuState.visible ? 'block' : 'none', // 控制可见性
+          }}
+          onClick={handleMenuClick}
         >
-          <div
-            ref={editingMenuRef}
-            className={`link-hover-menu editing`}
-            style={{
-              position: 'fixed',
-              left: menuState.x,
-              top: menuState.y,
-              transform: 'translateX(-50%)',
-              zIndex: 1001,
-            }}
-            onClick={handleMenuClick}
-          >
-            <div className="link-bubble-menu editing">
-              <div className="link-bubble-menu-item">
-                <span className="link-bubble-menu-label">链接</span>
-              </div>
-              <div className="link-bubble-menu-item">
-                <input
-                  type="url"
-                  value={menuState.linkUrl}
-                  onChange={(e) => {
-                    const newUrl = e.target.value;
-                    // 使用防抖更新
-                    debouncedUpdateLink(newUrl, menuState.linkText);
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder="输入链接地址"
-                  className="link-bubble-menu-input"
-                  autoFocus={isEditing && menuState.visible}
-                />
-              </div>
-              <div className="link-bubble-menu-item">
-                <span className="link-bubble-menu-label">链接标题</span>
-              </div>
-              <div className="link-bubble-menu-item">
-                <input
-                  type="text"
-                  value={menuState.linkText}
-                  onChange={(e) => {
-                    const newText = e.target.value;
-                    // 使用防抖更新
-                    debouncedUpdateLink(menuState.linkUrl, newText);
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder="输入链接显示文本"
-                  className="link-bubble-menu-input"
-                />
-              </div>
-              <div className="link-bubble-menu-divider" />
-              <div className="link-bubble-menu-item">
-                <button
-                  onClick={handleRemove}
-                  className="link-bubble-menu-button danger"
-                >
-                  删除链接
-                </button>
-              </div>
+          <div className="link-bubble-menu editing">
+            <div className="link-bubble-menu-item">
+              <span className="link-bubble-menu-label">链接</span>
+            </div>
+            <div className="link-bubble-menu-item">
+              <input
+                type="url"
+                value={editingUrl}
+                onChange={(e) => setEditingUrl(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="输入链接地址"
+                className="link-bubble-menu-input"
+                autoFocus={isEditing && menuState.visible}
+              />
+            </div>
+            <div className="link-bubble-menu-item">
+              <span className="link-bubble-menu-label">链接标题</span>
+            </div>
+            <div className="link-bubble-menu-item">
+              <input
+                type="text"
+                value={editingText}
+                onChange={(e) => setEditingText(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="输入链接显示文本"
+                className="link-bubble-menu-input"
+              />
+            </div>
+            <div className="link-bubble-menu-divider" />
+            <div className="link-bubble-menu-item">
+              <button
+                onClick={handleUpdate} // 新增更新按钮
+                className="link-bubble-menu-button"
+              >
+                更新
+              </button>
+            </div>
+            <div className="link-bubble-menu-item">
+              <button
+                onClick={handleRemove}
+                className="link-bubble-menu-button danger"
+              >
+                删除链接
+              </button>
             </div>
           </div>
         </div>
@@ -556,15 +568,15 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
           ref={menuRef}
           className={`link-hover-menu`}
           style={{
-            position: 'fixed',
+            position: 'absolute',
             left: menuState.x,
             top: menuState.y,
             transform: 'translateX(-50%)',
             zIndex: 1000,
             display: !isEditing && menuState.visible ? 'block' : 'none',
           }}
-          onMouseEnter={handleMenuMouseEnter}
-          onMouseLeave={handleMenuMouseLeave}
+          onMouseEnter={menuEventHandlers.onMouseEnter}
+          onMouseLeave={menuEventHandlers.onMouseLeave}
         >
           <div className="link-bubble-menu">
             <div className="link-bubble-menu-item url">
@@ -591,6 +603,7 @@ export const LinkHoverMenu: React.FC<LinkHoverMenuProps> = ({ editor }) => {
       </>
     );
   } catch (error) {
+    console.error("Error rendering LinkHoverMenu:", error); // 添加错误日志
 
     // 发生错误时重置状态
     setMenuState(prev => ({
