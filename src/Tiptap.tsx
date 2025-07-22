@@ -2,6 +2,11 @@ import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import { useEffect } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
+import TextAlign from "@tiptap/extension-text-align";
+import Color from "@tiptap/extension-color";
+import TextStyle from "@tiptap/extension-text-style";
+import Highlight from "@tiptap/extension-highlight";
+import Underline from "@tiptap/extension-underline";
 import { marked } from "marked";
 import { CustomHeading } from "./extensions/CustomHeading";
 import { SlashCommandNode } from "./extensions/SlashCommandNode";
@@ -38,6 +43,17 @@ const Tiptap = ({ markdown, onEditorReady }: TiptapProps) => {
           class: "tiptap-link",
         },
       }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      TextStyle,
+      Color.configure({
+        types: ['textStyle'],
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Underline,
       CustomPlaceholder.configure({
         placeholder: ({ node, pos }) => {
           // 检查是否是第一个节点（位置为0的一级标题）
