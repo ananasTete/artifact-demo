@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { BubbleMenu, isTextSelection } from "@tiptap/react";
 import type { Editor } from "@tiptap/react";
+import type { Transaction } from "prosemirror-state";
 import {
   persistentHighlightPluginKey,
   type PersistentHighlightState,
@@ -19,7 +20,14 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
   const [inputValue, setInputValue] = useState("");
   const [showConfirmationMenu, setShowConfirmationMenu] = useState(false);
   const [submittedValue, setSubmittedValue] = useState("");
+  const [menuMode, setMenuMode] = useState<"replace" | "insert">("replace"); // 'replace' or 'insert'
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Use ref to track showInput state immediately for shouldShow function
+  const showInputRef = useRef(false);
+
+  // Ref for the bubble menu container to detect outside clicks
+  const bubbleMenuRef = useRef<HTMLDivElement>(null);
 
   // Get the state of our custom highlight plugin
   const [highlightState, setHighlightState] = useState<PersistentHighlightState>({
@@ -35,9 +43,44 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
         setHighlightState(state);
       }
     };
+
+    const handleTransaction = ({
+      transaction,
+    }: {
+      transaction: Transaction;
+    }) => {
+      if (!transaction.docChanged) return;
+
+      const { selection } = editor.state;
+      const { $from } = selection;
+
+      // Check for insert mode trigger: typing a space on an empty line
+      if (
+        selection.empty &&
+        $from.parent.isTextblock &&
+        $from.parent.content.size === 1 &&
+        $from.parent.textContent === ' '
+      ) {
+        // First set the ref to immediately track the state
+        showInputRef.current = true;
+
+        // Then set the React state
+        setMenuMode('insert');
+        setShowInput(true);
+
+        // Then delete the space in the next tick
+        setTimeout(() => {
+          editor.chain().deleteRange({ from: $from.pos - 1, to: $from.pos }).run();
+        }, 0);
+      }
+    };
+
     editor.on("transaction", updateHighlightState);
+    editor.on("transaction", handleTransaction);
+
     return () => {
       editor.off("transaction", updateHighlightState);
+      editor.off("transaction", handleTransaction);
     };
   }, [editor]);
 
@@ -45,11 +88,45 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
   // 当显示输入框时自动聚焦
   useEffect(() => {
     if (showInput && inputRef.current) {
-      inputRef.current.focus();
+      // 使用 setTimeout 确保 DOM 更新完成后再聚焦
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 0);
     }
   }, [showInput]);
 
+  // 处理点击外部关闭气泡
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        (showInput || showConfirmationMenu) &&
+        bubbleMenuRef.current &&
+        !bubbleMenuRef.current.contains(event.target as Node)
+      ) {
+        // 关闭气泡菜单
+        setShowInput(false);
+        showInputRef.current = false;
+        setShowConfirmationMenu(false);
+        setInputValue("");
+        setSubmittedValue("");
+        // 清除持久选择但不强制聚焦编辑器
+        editor.chain().clearPersistentSelection().run();
+      }
+    };
+
+    if (showInput || showConfirmationMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showInput, showConfirmationMenu, editor]);
+
   const handleSetPersistentHighlight = () => {
+    setMenuMode("replace");
     editor.chain().setPersistentSelection().run();
     setShowInput(true);
   };
@@ -60,6 +137,7 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
     if (inputValue.trim()) {
       setSubmittedValue(inputValue.trim());
       setShowInput(false);
+      showInputRef.current = false;
       setShowConfirmationMenu(true);
     }
   };
@@ -77,6 +155,19 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
     setInputValue("");
     setSubmittedValue("");
     setShowInput(false);
+    showInputRef.current = false;
+    setShowConfirmationMenu(false);
+    editor.chain().focus().clearPersistentSelection().run();
+  };
+
+  const handleInsert = () => {
+    editor.chain().focus().insertContent(submittedValue).run();
+
+    // 重置所有状态并关闭菜单
+    setInputValue("");
+    setSubmittedValue("");
+    setShowInput(false);
+    showInputRef.current = false;
     setShowConfirmationMenu(false);
     editor.chain().focus().clearPersistentSelection().run();
   };
@@ -86,6 +177,7 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
     setInputValue("");
     setSubmittedValue("");
     setShowInput(false);
+    showInputRef.current = false;
     setShowConfirmationMenu(false);
     editor.chain().focus().clearPersistentSelection().run();
   };
@@ -189,8 +281,6 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
 
   // 处理AI工具点击
   const handleAIToolClick = (toolName: string) => {
-    // 这里可以根据不同的工具名称执行不同的操作
-    console.log(`点击了AI工具: ${toolName}`);
     // 可以在这里添加具体的AI工具逻辑
     // 例如：调用不同的AI API，或者设置不同的输入提示
     setInputValue(`使用${toolName}功能: `);
@@ -217,16 +307,18 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
         getReferenceClientRect,
         onHidden: () => {
           setShowInput(false);
+          showInputRef.current = false;
           setShowConfirmationMenu(false); // 隐藏时也关闭确认菜单
           editor.chain().focus().clearPersistentSelection().run();
         },
       }}
       shouldShow={({ state }) => {
         const hasTextSelection = isTextSelection(state.selection) && state.selection.from !== state.selection.to;
-        return hasTextSelection || highlightState.isActive || showConfirmationMenu;
+        const shouldShowMenu = hasTextSelection || highlightState.isActive || showInput || showConfirmationMenu || showInputRef.current;
+        return shouldShowMenu;
       }}
     >
-      <div className="bubble-menu-container">
+      <div className="bubble-menu-container" ref={bubbleMenuRef}>
         {!showInput && !showConfirmationMenu ? (
           // 默认的格式化按钮
           <div className="bubble-menu-buttons">
@@ -379,6 +471,7 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
             </div>
 
             {/* AI工具列表块 */}
+            {menuMode === "replace" && (
             <div className="ai-tools-block">
               <div className="ai-tools-category">
                 <div className="category-title">智写</div>
@@ -420,18 +513,28 @@ export const SelectionBubbleMenu: React.FC<SelectionBubbleMenuProps> = ({
                 </div>
               </div>
             </div>
+            )}
           </div>
         ) : (
           // 确认菜单模式
           <div className="bubble-confirmation-menu">
             <div className="confirmation-text">{submittedValue}</div>
             <div className="confirmation-actions">
-              <button
-                onClick={handleReplace}
-                className="bubble-btn bubble-replace"
-              >
-                替换
-              </button>
+              {menuMode === "replace" ? (
+                <button
+                  onClick={handleReplace}
+                  className="bubble-btn bubble-replace"
+                >
+                  替换
+                </button>
+              ) : (
+                <button
+                  onClick={handleInsert}
+                  className="bubble-btn bubble-replace" // Note: You might want a different class for 'insert'
+                >
+                  插入
+                </button>
+              )}
               <button
                 onClick={handleDiscard}
                 className="bubble-btn bubble-discard"
