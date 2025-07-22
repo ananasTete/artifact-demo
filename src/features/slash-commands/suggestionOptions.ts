@@ -1,6 +1,6 @@
 import { ReactRenderer } from '@tiptap/react';
 import tippy from 'tippy.js';
-import { CommandsList } from '../components/CommandsList';
+import { CommandsList } from './CommandsList';
 import type { Editor } from '@tiptap/react';
 import type { Range } from '@tiptap/core';
 import type { CommandItem } from './SlashCommands';

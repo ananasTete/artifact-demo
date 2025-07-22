@@ -1,5 +1,5 @@
 import { useState, useEffect, forwardRef, useImperativeHandle, useRef } from 'react';
-import type { CommandItem } from '../types/commands';
+import type { CommandItem } from '../shared/types/commands';
 import './CommandsList.css';
 
 interface CommandsListProps {

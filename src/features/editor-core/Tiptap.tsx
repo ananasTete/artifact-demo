@@ -8,16 +8,16 @@ import TextStyle from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
 import Underline from "@tiptap/extension-underline";
 import { marked } from "marked";
-import { CustomHeading } from "./extensions/CustomHeading";
-import { SlashCommandNode } from "./extensions/SlashCommandNode";
-import { MarkdownPaste } from "./extensions/MarkdownPaste";
-import { ProtectedFirstHeading } from "./extensions/ProtectedFirstHeading";
-import { CustomPlaceholder } from "./extensions/CustomPlaceholder";
-import { PersistentSelectionHighlight } from "./extensions/PersistentSelectionHighlight";
-import { LinkHoverMenu } from "./components/LinkHoverMenu";
-import { SelectionBubbleMenu } from "./components/SelectionBubbleMenu";
-import "./components/SelectionBubbleMenu.css";
-import { NodeHoverIcon } from "./components/NodeHoverIcon";
+import { CustomHeading } from "../editor-extensions/CustomHeading";
+import { SlashCommandNode } from "../slash-commands/SlashCommandNode";
+import { MarkdownPaste } from "../editor-extensions/MarkdownPaste";
+import { ProtectedFirstHeading } from "../editor-extensions/ProtectedFirstHeading";
+import { CustomPlaceholder } from "../editor-extensions/CustomPlaceholder";
+import { PersistentSelectionHighlight } from "../editor-extensions/PersistentSelectionHighlight";
+import { LinkHoverMenu } from "../link-management/LinkHoverMenu";
+import { SelectionBubbleMenu } from "../text-selection/SelectionBubbleMenu";
+import "../text-selection/SelectionBubbleMenu.css";
+import { NodeHoverIcon } from "../node-hover/NodeHoverIcon";
 
 interface TiptapProps {
   markdown: string;

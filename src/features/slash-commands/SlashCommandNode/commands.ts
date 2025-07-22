@@ -1,4 +1,4 @@
-import type { CommandItem } from '../../types/commands';
+import type { CommandItem } from '../../shared/types/commands';
 import type { Editor } from '@tiptap/react';
 import type { Range } from '@tiptap/core';
 

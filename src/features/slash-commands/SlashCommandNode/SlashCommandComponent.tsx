@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { NodeViewWrapper } from '@tiptap/react';
 import type { NodeViewProps } from '@tiptap/react';
-import { CommandsList } from '../../components/CommandsList';
+import { CommandsList } from '../CommandsList';
 import { getCommands } from './commands.ts';
-import type { CommandItem } from '../../types/commands';
+import type { CommandItem } from '../../shared/types/commands';
 import './SlashCommandComponent.css';
 
 export const SlashCommandComponent: React.FC<NodeViewProps> = ({

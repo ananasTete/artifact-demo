@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import Tiptap from './Tiptap';
-import { EnhancedTableOfContents } from './components/EnhancedTableOfContents';
+import { EnhancedTableOfContents } from '../table-of-contents/EnhancedTableOfContents';
 import type { Editor } from '@tiptap/react';
 import './App.css';
 

@@ -5,7 +5,7 @@ import type { Transaction } from "prosemirror-state";
 import {
   persistentHighlightPluginKey,
   type PersistentHighlightState,
-} from "../extensions/PersistentSelectionHighlight";
+} from "../editor-extensions/PersistentSelectionHighlight";
 import { posToDOMRect } from "@tiptap/core";
 import "./SelectionBubbleMenu.css";
 

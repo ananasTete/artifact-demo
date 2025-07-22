@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { throttle } from "lodash";
 import type { Editor } from "@tiptap/react";
-import HoverNodeIcon from "../assets/hover-node.png";
+import HoverNodeIcon from "../../shared/assets/hover-node.png";
 
 interface NodeHoverIconProps {
   editor: Editor;

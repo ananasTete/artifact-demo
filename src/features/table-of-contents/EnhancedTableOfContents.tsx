@@ -1,7 +1,7 @@
 import { useState, type RefObject } from 'react';
 import type { Editor } from '@tiptap/react';
-import { useToc } from '../hooks/useToc';
-import type { TocItem } from '../hooks/useToc';
+import { useToc } from './useToc';
+import type { TocItem } from './useToc';
 import './EnhancedTableOfContents.css';
 
 interface EnhancedTableOfContentsProps {
